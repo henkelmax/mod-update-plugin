@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+apply plugin: 'java-gradle-plugin'
+
+gradlePlugin {
+    plugins {
+        forgeupdate {
+            id = 'forge-update'
+            implementationClass = 'de.maxhenkel.forgeupdate.UpdatePlugin'
+        }
+    }
+}
+
+group 'de.maxhenkel.forge-update'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation gradleApi()
+    implementation group: 'com.konghq', name: 'unirest-java', version: '2.3.17'
+}
