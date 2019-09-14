@@ -9,14 +9,14 @@ apply plugin: 'maven-publish'
 gradlePlugin {
     plugins {
         forgeupdate {
-            id = "$name"
+            id = 'forge-update'
             implementationClass = 'de.maxhenkel.forgeupdate.UpdatePlugin'
         }
     }
 }
 
-group "$group"
-version "$version"
+group = group
+version = version
 
 sourceCompatibility = 1.8
 
@@ -42,17 +42,8 @@ task sourcesJar(type: Jar) {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            groupId = "$group"
-            artifactId = "$name"
-            version = "$version"
+        forgeupdate(MavenPublication) {
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name = 'Forge Update Plugin'
-            }
         }
     }
     repositories {
