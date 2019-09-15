@@ -68,6 +68,9 @@ public class UpdateTask extends DefaultTask {
                 .body(update)
                 .asJson();
         if (!response.isSuccess()) {
+            if (response.getStatus() == 401) {
+                throw new UpdateFailedException("Update failed. You are not authorized: " + response.getStatus() + " (" + response.getStatusText() + ")");
+            }
             JSONObject error = response.getBody().getObject();
             if (error.has("err")) {
                 JSONArray err = error.getJSONArray("err");
