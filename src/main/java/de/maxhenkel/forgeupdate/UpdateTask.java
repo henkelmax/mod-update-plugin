@@ -13,6 +13,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class UpdateTask extends DefaultTask {
 
@@ -28,6 +29,10 @@ public class UpdateTask extends DefaultTask {
     private String[] tags;
 
     private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+
+    static {
+        ISO_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     public UpdateTask() {
         publishDate = "";
