@@ -49,7 +49,7 @@ publishing {
     repositories {
         maven {
             name = 'henkelmax.public'
-            url = 'https://maven.maxhenkel.de/artifactory/public'
+            url = 'https://maven.maxhenkel.de/repository/public'
         }
     }
 }
