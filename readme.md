@@ -2,6 +2,11 @@
 
 A Gradle plugin for Forge mods to push updates to the [Mod Update Server](https://github.com/henkelmax/mod-update-server).
 
+## Useful Links
+
+- [Maven Releases](https://maven.maxhenkel.de/#artifact/de.maxhenkel.forge-update/forge-update)
+- [Mod Update Server](https://github.com/henkelmax/mod-update-server)
+
 ## Example Usage
 
 - Create a text file called `forge_update_api_key.txt` or a environment variable called `FORGE_UPDATE_API_KEY` containing your API key
