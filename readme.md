@@ -18,7 +18,7 @@ buildscript {
     }
     dependencies {
         ...
-        classpath group: 'de.maxhenkel.forge-update', name: 'forge-update', version: '1.0.2'
+        classpath group: 'de.maxhenkel.forge-update', name: 'forge-update', version: '1.0.3'
     }
 }
 ...
