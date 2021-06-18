@@ -47,6 +47,7 @@ forgeUpdate {
     serverURL = <YOUR SERVER URL>
     modID = <YOUR MOD ID>
     gameVersion = <YOUR MODS MINECRAFT VERSION>
+    modLoader = <"forge" | "fabric">
     modVersion = <YOUR MOD VERSION>
     releaseType = <YOUR RELEASE TYPE>
     tags = <TRUE IF THIS UPDATE IS RECOMMENDED> ? ['recommended'] : []

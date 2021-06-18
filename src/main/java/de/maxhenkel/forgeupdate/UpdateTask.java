@@ -23,6 +23,7 @@ public class UpdateTask extends DefaultTask {
     private String modID;
     private String publishDate;
     private String gameVersion;
+    private String modLoader;
     private String modVersion;
     private String[] updateMessages;
     private String releaseType;
@@ -36,6 +37,7 @@ public class UpdateTask extends DefaultTask {
 
     public UpdateTask() {
         publishDate = "";
+        modLoader = "forge";
         updateMessages = new String[0];
         tags = new String[0];
     }
@@ -56,6 +58,7 @@ public class UpdateTask extends DefaultTask {
             update.put("publishDate", publishDate);
         }
         update.put("gameVersion", gameVersion);
+        update.put("modLoader", modLoader);
         update.put("version", modVersion);
         JSONArray msgs = new JSONArray();
         Arrays.stream(updateMessages).forEach(message -> msgs.put(message));
@@ -133,6 +136,15 @@ public class UpdateTask extends DefaultTask {
 
     public void setGameVersion(String gameVersion) {
         this.gameVersion = gameVersion;
+    }
+
+    @Input
+    public String getModLoader() {
+        return modLoader;
+    }
+
+    public void setModLoader(String modLoader) {
+        this.modLoader = modLoader;
     }
 
     @Input
