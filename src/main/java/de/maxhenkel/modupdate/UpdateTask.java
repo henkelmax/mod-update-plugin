@@ -1,4 +1,4 @@
-package de.maxhenkel.forgeupdate;
+package de.maxhenkel.modupdate;
 
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;

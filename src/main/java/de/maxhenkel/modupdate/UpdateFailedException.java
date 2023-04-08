@@ -1,4 +1,4 @@
-package de.maxhenkel.forgeupdate;
+package de.maxhenkel.modupdate;
 
 public class UpdateFailedException extends Exception{
 
