@@ -7,13 +7,18 @@ import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.*;
 
 public class UpdateTask extends DefaultTask {
 
@@ -25,9 +30,10 @@ public class UpdateTask extends DefaultTask {
     private String gameVersion;
     private String modLoader;
     private String modVersion;
-    private String[] updateMessages;
+    private List<String> updateMessages;
+    private File changelogFile;
     private String releaseType;
-    private String[] tags;
+    private List<String> tags;
 
     private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
 
@@ -36,10 +42,9 @@ public class UpdateTask extends DefaultTask {
     }
 
     public UpdateTask() {
-        publishDate = "";
         modLoader = "forge";
-        updateMessages = new String[0];
-        tags = new String[0];
+        updateMessages = null;
+        tags = new ArrayList<>();
     }
 
     @TaskAction
@@ -52,7 +57,7 @@ public class UpdateTask extends DefaultTask {
         }
 
         JSONObject update = new JSONObject();
-        if (publishDate.isEmpty()) {
+        if (publishDate == null || publishDate.isEmpty()) {
             update.put("publishDate", ISO_DATE_FORMAT.format(Calendar.getInstance().getTime()));
         } else {
             update.put("publishDate", publishDate);
@@ -61,18 +66,18 @@ public class UpdateTask extends DefaultTask {
         update.put("modLoader", modLoader);
         update.put("version", modVersion);
         JSONArray msgs = new JSONArray();
-        Arrays.stream(updateMessages).forEach(message -> msgs.put(message));
+        gatherChangelog().forEach(msgs::put);
         update.put("updateMessages", msgs);
         update.put("releaseType", releaseType);
         JSONArray t = new JSONArray();
-        Arrays.stream(tags).forEach(message -> t.put(message));
+        tags.forEach(t::put);
         update.put("tags", t);
 
         HttpResponse<JsonNode> response = Unirest
                 .post(server + "updates/{modid}")
                 .routeParam("modid", modID)
                 .header("Content-Type", "application/json")
-                .header("apikey", apiKey)
+                .header("apikey", apiKey == null ? getApiKeyFromEnvironment() : apiKey)
                 .body(update)
                 .asJson();
         if (!response.isSuccess()) {
@@ -93,6 +98,49 @@ public class UpdateTask extends DefaultTask {
         }
     }
 
+    @Nullable
+    private String getApiKeyFromEnvironment() {
+        String apiKey = System.getenv("MOD_UPDATE_API_KEY");
+        if (apiKey == null) {
+            apiKey = System.getenv("FORGE_UPDATE_API_KEY");
+        }
+        if (apiKey == null) {
+            apiKey = readRootProjectFile("mod_update_api_key.txt");
+        }
+        if (apiKey == null) {
+            apiKey = readRootProjectFile("forge_update_api_key.txt");
+        }
+        return apiKey;
+    }
+
+    private String readRootProjectFile(String fileName) {
+        try {
+            File rootDir = getProject().getRootProject().getRootDir();
+            File file = new File(rootDir, fileName);
+            if (!file.exists() || file.isDirectory()) {
+                return null;
+            }
+            return new String(Files.readAllBytes(file.toPath()));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private List<String> gatherChangelog() {
+        List<String> changelog = new ArrayList<>();
+        if (updateMessages != null) {
+            changelog.addAll(updateMessages);
+        }
+        if (changelogFile != null) {
+            try {
+                Files.readAllLines(changelogFile.toPath(), StandardCharsets.UTF_8).stream().map(s -> s.trim().replaceFirst("^\\s*-\\s?", "").trim()).filter(s -> !s.isEmpty()).forEach(changelog::add);
+            } catch (IOException e) {
+                getLogger().lifecycle("Failed to read changelog file", e);
+            }
+        }
+        return changelog;
+    }
+
     @Input
     public String getServerURL() {
         return serverURL;
@@ -103,6 +151,7 @@ public class UpdateTask extends DefaultTask {
     }
 
     @Input
+    @Optional
     public String getApiKey() {
         return apiKey;
     }
@@ -121,6 +170,7 @@ public class UpdateTask extends DefaultTask {
     }
 
     @Input
+    @Optional
     public String getPublishDate() {
         return publishDate;
     }
@@ -139,6 +189,7 @@ public class UpdateTask extends DefaultTask {
     }
 
     @Input
+    @Optional
     public String getModLoader() {
         return modLoader;
     }
@@ -157,12 +208,23 @@ public class UpdateTask extends DefaultTask {
     }
 
     @Input
-    public String[] getUpdateMessages() {
+    @Optional
+    public List<String> getUpdateMessages() {
         return updateMessages;
     }
 
-    public void setUpdateMessages(String[] updateMessages) {
+    public void setUpdateMessages(List<String> updateMessages) {
         this.updateMessages = updateMessages;
+    }
+
+    @InputFile
+    @Optional
+    public File getChangelogFile() {
+        return changelogFile;
+    }
+
+    public void setChangelogFile(File changelogFile) {
+        this.changelogFile = changelogFile;
     }
 
     @Input
@@ -175,11 +237,11 @@ public class UpdateTask extends DefaultTask {
     }
 
     @Input
-    public String[] getTags() {
+    public List<String> getTags() {
         return tags;
     }
 
-    public void setTags(String[] tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 }

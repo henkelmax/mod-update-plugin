@@ -30,20 +30,6 @@ plugins {
 }
 
 modUpdate {
-    def messages = []
-    file('changelog.md').eachLine { String line ->
-        if (line.trim().startsWith('-')) {
-            messages.add(line.replaceFirst('-', '').trim())
-        }
-    }
-    def apiKeyFile = file('mod_update_api_key.txt')
-    if (System.env.MOD_UPDATE_API_KEY != null) {
-        apiKey = System.env.MOD_UPDATE_API_KEY;
-    } else if (apiKeyFile.exists()) {
-        apiKey = apiKeyFile.text
-    } else {
-        apiKey = ""
-    }
     serverURL = <YOUR SERVER URL>
     modID = <YOUR MOD ID>
     gameVersion = <YOUR MODS MINECRAFT VERSION>
@@ -51,7 +37,7 @@ modUpdate {
     modVersion = <YOUR MOD VERSION>
     releaseType = <YOUR RELEASE TYPE>
     tags = <TRUE IF THIS UPDATE IS RECOMMENDED> ? ['recommended'] : []
-    updateMessages = messages
+    changelogFile = file('changelog.md')
 }
 ```
 
