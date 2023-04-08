@@ -14,7 +14,7 @@ A Gradle plugin for Minecraft mods to push updates to the [Mod Update Server](ht
 - Create a file called `changelog.md` containing a list of your changes
 - Add the following to your gradle buildscript
 
-
+*settings.gradle*
 ``` groovy
 pluginManagement {
     repositories {
