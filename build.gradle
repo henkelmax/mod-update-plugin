@@ -46,13 +46,13 @@ task sourcesJar(type: Jar) {
 
 jar {
     manifest {
-        attributes 'Implementation-Version': version
+        attributes 'Implementation-Version': archiveVersion
     }
 }
 
 publishing {
     publications {
-        forgeupdate(MavenPublication) {
+        modUpdate(MavenPublication) {
             from components.java
         }
     }
@@ -60,6 +60,10 @@ publishing {
         maven {
             name = 'henkelmax.public'
             url = 'https://maven.maxhenkel.de/repository/public'
+        }
+        maven {
+            name = 'henkelmax.snapshots'
+            url = 'https://maven.maxhenkel.de/snapshots'
         }
     }
 }
