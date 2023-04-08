@@ -3,11 +3,11 @@ package de.maxhenkel.modupdate;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;

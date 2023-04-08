@@ -1,10 +1,20 @@
 plugins {
     id 'java'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
     id 'net.linguica.maven-settings' version '0.5'
 }
 
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'maven-publish'
+sourceCompatibility = JavaLanguageVersion.of(8)
+targetCompatibility = JavaLanguageVersion.of(8)
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+}
+
+group = group
+archivesBaseName = name
+version = version
 
 gradlePlugin {
     plugins {
@@ -15,28 +25,29 @@ gradlePlugin {
     }
 }
 
-group = group
-version = version
-
-sourceCompatibility = 1.8
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation gradleApi()
-    implementation 'com.konghq:unirest-java:3.14.2'
+    implementation "com.konghq:unirest-java:${unirest_version}"
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    classifier 'javadoc'
     from javadoc
 }
 
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    classifier 'sources'
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': version
+    }
 }
 
 publishing {
