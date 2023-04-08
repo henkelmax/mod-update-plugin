@@ -4,7 +4,7 @@ A Gradle plugin for Minecraft mods to push updates to the [Mod Update Server](ht
 
 ## Useful Links
 
-- [Maven Releases](https://maven.maxhenkel.de/#artifact/de.maxhenkel.mod-update/mod-update)
+- [Maven Releases](https://maven.maxhenkel.de/#/releases/de/maxhenkel/mod-update/mod-update)
 - [Mod Update Server](https://github.com/henkelmax/mod-update-server)
 
 ## Example Usage
@@ -14,21 +14,21 @@ A Gradle plugin for Minecraft mods to push updates to the [Mod Update Server](ht
 - Create a file called `changelog.md` containing a list of your changes
 - Add the following to your gradle buildscript
 
-*build.gradle*
+
 ``` groovy
-buildscript {
+pluginManagement {
     repositories {
-        ...
         maven { url = 'https://maven.maxhenkel.de/repository/public' }
     }
-    dependencies {
-        ...
-        classpath group: 'de.maxhenkel.mod-update', name: 'mod-update', version: '2.0.0'
-    }
 }
-...
-apply plugin: 'mod-update'
-...
+```
+
+*build.gradle*
+``` groovy
+plugins {
+    id 'mod-update' version '2.0.0'
+}
+
 modUpdate {
     def messages = []
     file('changelog.md').eachLine { String line ->
