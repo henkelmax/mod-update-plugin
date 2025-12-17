@@ -19,13 +19,13 @@ public abstract class UpdateTask extends ModTaskBase {
     @TaskAction
     public void updateTask() throws Exception {
         ModExtension mod = getModExtension().get();
-        URL url = URI.create(mod.getServerURL().get()).toURL();
+        URL url = URI.create(mod.getUpdate().getServerURL().get()).toURL();
         String server = url.getProtocol() + "://" + url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort())) + url.getPath();
         if (!server.endsWith("/")) {
             server += "/";
         }
 
-        String apiKey = mod.getApiKey().getOrNull();
+        String apiKey = mod.getUpdate().getApiKey().getOrNull();
 
         if (apiKey == null) {
             apiKey = getApiKeyFromEnvironment();
