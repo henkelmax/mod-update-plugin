@@ -5,21 +5,29 @@ plugins {
     id 'net.linguica.maven-settings' version '0.5'
 }
 
-sourceCompatibility = JavaLanguageVersion.of(8)
-targetCompatibility = JavaLanguageVersion.of(8)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(java_version)
+    }
+    sourceCompatibility = JavaLanguageVersion.of(java_version)
+    targetCompatibility = JavaLanguageVersion.of(java_version)
+}
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
 }
 
+base {
+    archivesName = name
+}
 group = group
-archivesBaseName = name
-version = version
+version = plugin_version
 
 gradlePlugin {
     plugins {
-        modupdate {
+        register('modupdate') {
             id = 'mod-update'
+            displayName = 'mod-update'
             implementationClass = 'de.maxhenkel.modupdate.UpdatePlugin'
         }
     }
@@ -34,12 +42,12 @@ dependencies {
     implementation "com.konghq:unirest-java:${unirest_version}"
 }
 
-task javadocJar(type: Jar) {
+tasks.register('javadocJar', Jar) {
     classifier 'javadoc'
     from javadoc
 }
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allSource
     classifier 'sources'
 }
@@ -60,10 +68,6 @@ publishing {
         maven {
             name = 'henkelmax.public'
             url = 'https://maven.maxhenkel.de/repository/public'
-        }
-        maven {
-            name = 'henkelmax.snapshots'
-            url = 'https://maven.maxhenkel.de/snapshots'
         }
     }
 }
