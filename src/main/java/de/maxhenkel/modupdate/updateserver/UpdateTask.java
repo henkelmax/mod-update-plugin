@@ -1,6 +1,7 @@
 package de.maxhenkel.modupdate.updateserver;
 
-import de.maxhenkel.modupdate.ModTask;
+import de.maxhenkel.modupdate.ModExtension;
+import de.maxhenkel.modupdate.ModTaskBase;
 import kong.unirest.core.ContentType;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.Unirest;
@@ -11,19 +12,20 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
-public abstract class UpdateTask extends ModTask {
+public abstract class UpdateTask extends ModTaskBase {
 
     public static final String TASK_NAME = "modUpdate";
 
     @TaskAction
     public void updateTask() throws Exception {
-        URL url = URI.create(getServerURL().get()).toURL();
+        ModExtension mod = getModExtension().get();
+        URL url = URI.create(mod.getServerURL().get()).toURL();
         String server = url.getProtocol() + "://" + url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort())) + url.getPath();
         if (!server.endsWith("/")) {
             server += "/";
         }
 
-        String apiKey = getApiKey().getOrNull();
+        String apiKey = mod.getApiKey().getOrNull();
 
         if (apiKey == null) {
             apiKey = getApiKeyFromEnvironment();
@@ -35,19 +37,19 @@ public abstract class UpdateTask extends ModTask {
 
         HttpResponse<ModUpdateResponse> response = Unirest
                 .post(server + "updates/{modid}")
-                .routeParam("modid", getModID().get())
+                .routeParam("modid", mod.getModID().get())
                 .contentType(ContentType.APPLICATION_JSON)
                 .header("apikey", apiKey)
                 .body(ModUpdatePayload.create(
                         this,
-                        getPublishDate().getOrNull(),
-                        getGameVersion().get(),
-                        getModLoader().get(),
-                        getModVersion().get(),
-                        getUpdateMessages().getOrNull(),
-                        getChangelogFile().getOrNull(),
-                        getReleaseType().get(),
-                        getTags().getOrNull()
+                        mod.getPublishDate().getOrNull(),
+                        mod.getGameVersion().get(),
+                        mod.getModLoader().get(),
+                        mod.getModVersion().get(),
+                        mod.getUpdateMessages().getOrNull(),
+                        mod.getChangelogFile().getOrNull(),
+                        mod.getReleaseType().get(),
+                        mod.getTags().getOrNull()
                 ))
                 .asObject(ModUpdateResponse.class);
 
