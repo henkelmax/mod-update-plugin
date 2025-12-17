@@ -1,6 +1,7 @@
 package de.maxhenkel.modupdate.updateserver;
 
 import org.gradle.api.Task;
+import org.gradle.api.file.RegularFile;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -30,10 +31,10 @@ public record ModUpdatePayload(
             String gameVersion,
             String modLoader,
             String modVersion,
-            List<String> updateMessages,
-            File changelogFile,
+            @Nullable List<String> updateMessages,
+            @Nullable RegularFile changelogFile,
             String releaseType,
-            List<String> tags
+            @Nullable List<String> tags
     ) {
         if (publishDate == null || publishDate.isEmpty()) {
             publishDate = ISO_DATE_FORMAT.format(Calendar.getInstance().getTime());
@@ -45,14 +46,14 @@ public record ModUpdatePayload(
         return new ModUpdatePayload(publishDate, gameVersion, modLoader, modVersion, updateMessages, releaseType, tags);
     }
 
-    private static List<String> gatherChangelog(Task task, List<String> updateMessages, File changelogFile) {
+    private static List<String> gatherChangelog(Task task, List<String> updateMessages, @Nullable RegularFile changelogFile) {
         List<String> changelog = new ArrayList<>();
         if (updateMessages != null) {
             changelog.addAll(updateMessages);
         }
         if (changelogFile != null) {
             try {
-                Files.readAllLines(changelogFile.toPath(), StandardCharsets.UTF_8).stream().map(s -> s.trim().replaceFirst("^\\s*-\\s?", "").trim()).filter(s -> !s.isEmpty()).forEach(changelog::add);
+                Files.readAllLines(changelogFile.getAsFile().toPath(), StandardCharsets.UTF_8).stream().map(s -> s.trim().replaceFirst("^\\s*-\\s?", "").trim()).filter(s -> !s.isEmpty()).forEach(changelog::add);
             } catch (IOException e) {
                 task.getLogger().lifecycle("Failed to read changelog file", e);
             }
