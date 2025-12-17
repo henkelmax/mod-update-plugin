@@ -1,10 +1,8 @@
-package de.maxhenkel.modupdate;
+package de.maxhenkel.modupdate.updateserver;
 
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.Unirest;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import kong.unirest.core.ContentType;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.Unirest;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
@@ -14,13 +12,14 @@ import org.gradle.api.tasks.TaskAction;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class UpdateTask extends DefaultTask {
+
+    public static final String TASK_NAME = "modUpdate";
 
     private String serverURL;
     private String apiKey;
@@ -35,12 +34,6 @@ public class UpdateTask extends DefaultTask {
     private String releaseType;
     private List<String> tags;
 
-    private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-
-    static {
-        ISO_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
-
     public UpdateTask() {
         modLoader = "forge";
         updateMessages = null;
@@ -49,50 +42,27 @@ public class UpdateTask extends DefaultTask {
 
     @TaskAction
     public void updateTask() throws Exception {
-        URL uri = new URL(serverURL);
-        String server = uri.getProtocol() + "://" + uri.getHost() + (uri.getPort() < 0 ? "" : (":" + uri.getPort())) + uri.getPath();
-
+        URL url = URI.create(serverURL).toURL();
+        String server = url.getProtocol() + "://" + url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort())) + url.getPath();
         if (!server.endsWith("/")) {
             server += "/";
         }
 
-        JSONObject update = new JSONObject();
-        if (publishDate == null || publishDate.isEmpty()) {
-            update.put("publishDate", ISO_DATE_FORMAT.format(Calendar.getInstance().getTime()));
-        } else {
-            update.put("publishDate", publishDate);
-        }
-        update.put("gameVersion", gameVersion);
-        update.put("modLoader", modLoader);
-        update.put("version", modVersion);
-        JSONArray msgs = new JSONArray();
-        gatherChangelog().forEach(msgs::put);
-        update.put("updateMessages", msgs);
-        update.put("releaseType", releaseType);
-        JSONArray t = new JSONArray();
-        tags.forEach(t::put);
-        update.put("tags", t);
-
-        HttpResponse<JsonNode> response = Unirest
+        HttpResponse<ModUpdateResponse> response = Unirest
                 .post(server + "updates/{modid}")
                 .routeParam("modid", modID)
-                .header("Content-Type", "application/json")
+                .contentType(ContentType.APPLICATION_JSON)
                 .header("apikey", apiKey == null ? getApiKeyFromEnvironment() : apiKey)
-                .body(update)
-                .asJson();
+                .body(ModUpdatePayload.create(this, publishDate, gameVersion, modLoader, modVersion, updateMessages, changelogFile, releaseType, tags))
+                .asObject(ModUpdateResponse.class);
+
         if (!response.isSuccess()) {
             if (response.getStatus() == 401) {
                 throw new UpdateFailedException("Update failed. You are not authorized: " + response.getStatus() + " (" + response.getStatusText() + ")");
             }
-            JSONObject error = response.getBody().getObject();
-            if (error.has("err")) {
-                JSONArray err = error.getJSONArray("err");
-                for (int i = 0; i < err.length(); i++) {
-                    JSONObject e = err.getJSONObject(i);
-                    if (e.has("message")) {
-                        getLogger().error("Server returned: {}", e.getString("message"));
-                    }
-                }
+            ModUpdateResponse body = response.getBody();
+            for (ModUpdateResponse.ApiErrorDetail err : body.err()) {
+                getLogger().error("Server returned: {}", err.message());
             }
             throw new UpdateFailedException("Update failed. Response Code " + response.getStatus() + " (" + response.getStatusText() + ")");
         }
@@ -124,21 +94,6 @@ public class UpdateTask extends DefaultTask {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private List<String> gatherChangelog() {
-        List<String> changelog = new ArrayList<>();
-        if (updateMessages != null) {
-            changelog.addAll(updateMessages);
-        }
-        if (changelogFile != null) {
-            try {
-                Files.readAllLines(changelogFile.toPath(), StandardCharsets.UTF_8).stream().map(s -> s.trim().replaceFirst("^\\s*-\\s?", "").trim()).filter(s -> !s.isEmpty()).forEach(changelog::add);
-            } catch (IOException e) {
-                getLogger().lifecycle("Failed to read changelog file", e);
-            }
-        }
-        return changelog;
     }
 
     @Input

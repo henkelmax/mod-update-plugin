@@ -1,4 +1,4 @@
-package de.maxhenkel.modupdate;
+package de.maxhenkel.modupdate.updateserver;
 
 public class UpdateFailedException extends Exception{
 

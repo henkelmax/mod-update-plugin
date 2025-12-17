@@ -39,7 +39,8 @@ repositories {
 
 dependencies {
     implementation gradleApi()
-    implementation "com.konghq:unirest-java:${unirest_version}"
+    implementation "com.konghq:unirest-java-core:${unirest_version}"
+    implementation "com.konghq:unirest-object-mappers-gson:${unirest_gson_version}"
 }
 
 tasks.register('javadocJar', Jar) {
